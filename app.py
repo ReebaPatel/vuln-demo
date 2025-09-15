@@ -1,32 +1,34 @@
+import sqlite3
 import os
 import pickle
-import sqlite3
+import hashlib
 
-# 1️⃣ Hardcoded secret
-SECRET_KEY = "super_secret_password123"  # 🚨 LGTM will flag this
-
-# 2️⃣ SQL Injection
-def get_user():
+# SQL Injection with clearly untrusted input
+def get_user_sql():
+    username = input("Enter username: ")
     conn = sqlite3.connect("users.db")
     cursor = conn.cursor()
-    username = input("Enter username: ")
-    cursor.execute(f"SELECT * FROM users WHERE username = '{username}'")  # 🚨 SQLi
-    print(cursor.fetchall())
+    # Mark input as untrusted explicitly
+    cursor.execute(f"SELECT * FROM users WHERE username = '{username}'")  # SQLi
 
-# 3️⃣ Command Injection
-def list_files():
-    directory = input("Enter directory to list: ")
-    os.system("ls " + directory)  # 🚨 Command Injection
+# Command Injection
+def run_command():
+    cmd = input("Enter command: ")
+    os.system(cmd)  # Command injection
 
-# 4️⃣ Insecure Deserialization
-def load_data():
-    filename = input("Enter pickle filename: ")
+# Weak hash
+def weak_hash():
+    passwd = input("Enter password: ")
+    hashed = hashlib.md5(passwd.encode()).hexdigest()  # Weak hashing
+
+# Insecure deserialization
+def insecure_pickle():
+    filename = input("Enter pickle file name: ")
     with open(filename, "rb") as f:
-        obj = pickle.load(f)  # 🚨 Insecure deserialization
-    print(obj)
+        data = pickle.load(f)  # Unsafe deserialization
 
 if __name__ == "__main__":
-    print("=== Vulnerable Demo ===")
-    get_user()
-    list_files()
-    load_data()
+    get_user_sql()
+    run_command()
+    weak_hash()
+    insecure_pickle()
